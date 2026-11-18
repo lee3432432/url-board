@@ -221,7 +221,7 @@ function pump(){
     doFetch(it).catch(()=>{}).finally(()=>{ running--; save(); updateCard(it); setTimeout(pump,250); });
   }
 }
-const API = location.hostname.endsWith('vercel.app') ? '/api' : 'https://url-board.vercel.app/api';
+const API = location.hostname.endsWith('vercel.app') ? '/api' : 'https://url-board-ol88.vercel.app/api';
 async function doFetch(item){
   const p=item.platform;
   if(/^[\w.-]+\.(com|net|me)$/i.test(item.title||'')||/BLOCKED/.test(item.title||'')) item.title='';
