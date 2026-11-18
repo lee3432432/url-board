@@ -342,7 +342,6 @@ function card(i){
   let tall = false;
   const ig = i.platform==='instagram' && igCode(i.url);
   if(ig){ tall=true; img = `<iframe class="emb ig" src="https://www.instagram.com/${ig.type}/${ig.code}/embed/" loading="lazy" scrolling="no"></iframe>`; }
-  else if(i.platform==='tiktok' && i.ttId && !i.image){ tall=true; img = `<iframe class="emb tt" src="https://www.tiktok.com/embed/v2/${i.ttId}?lang=ko-KR" loading="lazy" scrolling="no"></iframe>`; }
   else if(i.platform==='tiktok' && i.image){ tall=true; }
   else if(i.platform==='x' && xId(i.url)){ tall=true; img = `<iframe class="emb xx" src="https://platform.twitter.com/embed/Tweet.html?id=${xId(i.url)}&hideThread=true&lang=ko" loading="lazy" scrolling="no"></iframe>`; }
   const opts = `<option value="">미분류</option>` + state.channels.map(c=>`<option value="${c.id}" ${c.id===i.channelId?'selected':''}>${esc(c.name)}</option>`).join('');
