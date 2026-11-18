@@ -221,7 +221,7 @@ function pump(){
     doFetch(it).catch(()=>{}).finally(()=>{ running--; save(); updateCard(it); setTimeout(pump,250); });
   }
 }
-let mlBlocked=false;
+const API = location.hostname.endsWith('vercel.app') ? '/api' : 'https://url-board.vercel.app/api';
 async function doFetch(item){
   const p=item.platform;
   if(/^[\w.-]+\.(com|net|me)$/i.test(item.title||'')||/BLOCKED/.test(item.title||'')) item.title='';
@@ -232,33 +232,19 @@ async function doFetch(item){
       if(d.title){ item.title=d.title; item.desc=d.author_name||''; } }catch(e){}
     item.title=item.title||'YouTube 영상'; item.status='ok'; return;
   }
-  if(p==='tiktok'){
-    try{ const d=await (await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(item.url)}`)).json();
-      if(d.embed_product_id) item.ttId=d.embed_product_id;
-      if(d.thumbnail_url) item.image=d.thumbnail_url;
-      item.title=d.title||item.title||''; item.desc=d.author_name?('@'+(d.author_unique_id||d.author_name)):item.desc;
-    }catch(e){}
-    if(!item.ttId){ const m=item.url.match(/video\/(\d+)/); if(m) item.ttId=m[1]; }
-    item.title=item.title||'TikTok 영상'; item.status=item.ttId?'ok':'retry'; return;
-  }
   if(p==='instagram'){
     const c=igCode(item.url); item.title=item.title||(c&&c.type==='reel'?'Instagram 릴스':'Instagram 게시물'); item.status='ok'; return;
   }
-  if(p==='x'){ if(!item.title||item.title==='x.com') item.title='X 게시물'; item.status='ok'; return; }
-  if(!mlBlocked){
-    try{
-      const d=await (await fetch(`https://api.microlink.io/?url=${encodeURIComponent(item.url)}`)).json();
-      if(d.status==='success'){
-        const m=d.data;
-        item.title=m.title||item.title||''; item.desc=m.description||item.desc||'';
-        if(m.image&&m.image.url) item.image=m.image.url;
-        if(m.publisher) item.site=m.publisher;
-      } else if(d.code==='ERATE'){ mlBlocked=true; }
-    }catch(e){}
-  }
-  if(!item.image && p!=='facebook') item.image=shot(item.url);
-  if(!item.title) item.title=host(item.url);
-  item.status=(mlBlocked&&!item.desc)?'retry':'ok';
+  if(p==='x' && xId(item.url)){ item.title=item.title||'X 게시물'; item.status='ok'; return; }
+  try{
+    const d=await (await fetch(`${API}/meta?url=${encodeURIComponent(item.url)}`)).json();
+    item.title=d.title||item.title||''; item.desc=d.description||item.desc||'';
+    if(d.site) item.site=d.site;
+    if(d.image) item.image=`${API}/thumb?url=${encodeURIComponent(item.url)}`;
+    item.status='ok';
+  }catch(e){ item.status='retry'; }
+  if(!item.image && p==='web') item.image=shot(item.url);
+  if(!item.title) item.title=p==='tiktok'?'TikTok 영상':host(item.url);
 }
 
 function addUrls(text, chId){
@@ -449,7 +435,7 @@ $('#importFile').onchange=e=>{
 
 render();
 // 이전에 불러오다 멈춘 카드 재시도
-state.items.filter(i=>i.status!=='ok' || (i.platform==='tiktok'&&!i.ttId&&!i.image) || (/^[\w.-]+\.(com|net|me)$/i.test(i.title||''))).forEach(fetchMeta);
+state.items.filter(i=>i.status!=='ok' || ((i.platform==='tiktok'||i.platform==='facebook')&&!i.image) || (/^[\w.-]+\.(com|net|me)$/i.test(i.title||''))).forEach(fetchMeta);
 </script>
 </body>
 </html>
