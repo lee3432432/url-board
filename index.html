@@ -65,7 +65,7 @@ input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
 .thumb.tall{aspect-ratio:4/5;background:#000}
 .thumb .emb{position:absolute;left:0;width:100%;border:0;pointer-events:none;background:#fff}
 .thumb .emb.ig{top:-56px;height:900px}
-.thumb .emb.tt{top:0;height:100%;background:#000}
+.thumb .emb.tt{top:0;height:760px;background:#000}
 .thumb .emb.xx{top:0;height:900px}
 .thumb::before{content:"";position:absolute;inset:0;z-index:2}
 .thumb .ph{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:700;font-size:20px;text-align:center;padding:10px}
@@ -224,6 +224,7 @@ function pump(){
 let mlBlocked=false;
 async function doFetch(item){
   const p=item.platform;
+  if(/^[\w.-]+\.(com|net|me)$/i.test(item.title||'')||/BLOCKED/.test(item.title||'')) item.title='';
   if(p==='youtube'){
     const id=ytId(item.url);
     if(id) item.image=`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
@@ -341,7 +342,7 @@ function card(i){
   let tall = false;
   const ig = i.platform==='instagram' && igCode(i.url);
   if(ig){ tall=true; img = `<iframe class="emb ig" src="https://www.instagram.com/${ig.type}/${ig.code}/embed/" loading="lazy" scrolling="no"></iframe>`; }
-  else if(i.platform==='tiktok' && i.ttId && !i.image){ tall=true; img = `<iframe class="emb tt" src="https://www.tiktok.com/player/v1/${i.ttId}?controls=0&progress_bar=0&play_button=0&volume_control=0&fullscreen_button=0&timestamp=0&music_info=0&description=0&rel=0&native_context_menu=0&closed_caption=0" loading="lazy" scrolling="no"></iframe>`; }
+  else if(i.platform==='tiktok' && i.ttId && !i.image){ tall=true; img = `<iframe class="emb tt" src="https://www.tiktok.com/embed/v2/${i.ttId}?lang=ko-KR" loading="lazy" scrolling="no"></iframe>`; }
   else if(i.platform==='tiktok' && i.image){ tall=true; }
   else if(i.platform==='x' && xId(i.url)){ tall=true; img = `<iframe class="emb xx" src="https://platform.twitter.com/embed/Tweet.html?id=${xId(i.url)}&hideThread=true&lang=ko" loading="lazy" scrolling="no"></iframe>`; }
   const opts = `<option value="">미분류</option>` + state.channels.map(c=>`<option value="${c.id}" ${c.id===i.channelId?'selected':''}>${esc(c.name)}</option>`).join('');
@@ -449,7 +450,7 @@ $('#importFile').onchange=e=>{
 
 render();
 // 이전에 불러오다 멈춘 카드 재시도
-state.items.filter(i=>i.status!=='ok' || (i.platform==='tiktok'&&!i.ttId&&!i.image) || ((i.platform==='instagram'||i.platform==='x')&&/\.com$/.test(i.title))).forEach(fetchMeta);
+state.items.filter(i=>i.status!=='ok' || (i.platform==='tiktok'&&!i.ttId&&!i.image) || (/^[\w.-]+\.(com|net|me)$/i.test(i.title||''))).forEach(fetchMeta);
 </script>
 </body>
 </html>
